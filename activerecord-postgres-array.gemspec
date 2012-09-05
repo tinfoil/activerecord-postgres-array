@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "activerecord-postgres-array"
-  s.version = "0.0.10"
+  s.version = "0.0.10.tinfoil.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Tim Connor"]
@@ -13,9 +13,9 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.7}
   s.summary = s.description
 
-  s.add_dependency "activerecord"
+  s.add_dependency 'activerecord', '>= 3.1','< 4.0'
   s.add_development_dependency 'rake'
-  s.add_development_dependency 'rspec', '~> 2.12.0'
+  s.add_development_dependency 'rspec'
   s.add_development_dependency 'pg'
   s.add_development_dependency 'activerecord-postgres-hstore'
   s.add_development_dependency 'combustion', '~> 0.3.1'
