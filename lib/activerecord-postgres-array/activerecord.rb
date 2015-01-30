@@ -90,6 +90,15 @@ module ActiveRecord
       end
       alias :array :array?
 
+      def extract_limit_with_array(sql_type)
+        if sql_type.to_s =~ /\[\]$/
+          nil # Postgres arrays don't have an enforced limit on the number of elements
+        else
+          extract_limit_without_array(sql_type)
+        end
+      end
+      alias_method_chain :extract_limit, :array
+
       # Does the type casting from array columns using String#from_postgres_array or Array#from_postgres_array.
       def type_cast_code_with_array(var_name)
         if array?
