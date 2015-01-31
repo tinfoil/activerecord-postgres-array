@@ -14,7 +14,7 @@ module ActiveRecord
         if (column = column_for_attribute(name)) && (include_primary_key || !column.primary)
           if include_readonly_attributes || !self.class.readonly_attributes.include?(name)
             value = read_attribute(name)
-            if column.type.to_s =~ /_array$/ && value && value.is_a?(Array)
+            if column.respond_to?(:array?) && column.array? && value && value.is_a?(Array)
               value = value.to_postgres_array(new_record?)
             elsif klass.serialized_attributes.include?(name)
               value = @attributes[name].serialized_value
@@ -85,9 +85,23 @@ module ActiveRecord
     end
 
     class PostgreSQLColumn < Column
+      def array?
+        !!(type.to_s =~ /_array$/)
+      end
+      alias :array :array?
+
+      def extract_limit_with_array(sql_type)
+        if sql_type.to_s =~ /\[\]$/
+          nil # Postgres arrays don't have an enforced limit on the number of elements
+        else
+          extract_limit_without_array(sql_type)
+        end
+      end
+      alias_method_chain :extract_limit, :array
+
       # Does the type casting from array columns using String#from_postgres_array or Array#from_postgres_array.
       def type_cast_code_with_array(var_name)
-        if type.to_s =~ /_array$/
+        if array?
           base_type = type.to_s.gsub(/_array/, '')
           "#{var_name}.from_postgres_array(:#{base_type.parameterize('_')})"
         else
@@ -97,7 +111,7 @@ module ActiveRecord
       alias_method_chain :type_cast_code, :array
 
       def type_cast_with_array(value)
-        if value.present? && type.to_s =~ /_array$/
+        if value.present? && array?
           base_type = type.to_s.gsub(/_array/, '')
           value.from_postgres_array(base_type.parameterize('_').to_sym)
         else
